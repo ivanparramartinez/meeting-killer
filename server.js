@@ -21,15 +21,6 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 console.log('Gemini AI initialized successfully');
 
-// Health check endpoint for Vercel
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-    });
-});
-
 // Meeting processing endpoint
 app.post('/api/generate-outcome', async (req, res) => {
     try {
