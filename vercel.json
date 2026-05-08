@@ -8,8 +8,12 @@
   ],
   "routes": [
     {
-      "src": "server.js",
-      "dest": "api"
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
     }
   ],
   "env": {
