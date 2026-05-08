@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Killer - AI-Powered Meeting Outcomes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'dark': '#0a0a0a',
+                        'darker': '#050505',
+                        'light-gray': '#1a1a1a',
+                        'medium-gray': '#2a2a2a',
+                        'accent': '#6366f1',
+                        'accent-hover': '#4f46e5',
+                        'premium-purple': '#8b5cf6',
+                        'premium-pink': '#ec4899',
+                        'glass': 'rgba(255, 255, 255, 0.05)',
+                        'glass-border': 'rgba(255, 255, 255, 0.1)',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.8s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)' },
+                            '100%': { boxShadow: '0 0 30px rgba(139, 92, 246, 0.5)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .clean-card {
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .clean-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .clean-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+        
+        .clean-button:active {
+            transform: translateY(0);
+        }
+        
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        
+        .clean-textarea {
+            background: #0f0f0f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.2s ease;
+        }
+        
+        .clean-textarea:focus {
+            border-color: #6366f1;
+            outline: none;
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+        
+        .action-items-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a1a2a 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+        }
+        
+        .action-items-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .action-items-icon {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .action-item {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .action-item:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .action-item-icon {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #6366f1;
+        }
+        
+        .output-card {
+            animation: fadeIn 0.4s ease-out backwards;
+        }
+        
+        .output-card:nth-child(1) { animation-delay: 0.05s; }
+        .output-card:nth-child(2) { animation-delay: 0.1s; }
+        .output-card:nth-child(3) { animation-delay: 0.15s; }
+        .output-card:nth-child(4) { animation-delay: 0.2s; }
+        .output-card:nth-child(5) { animation-delay: 0.25s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-dark text-white min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-3">
+                <span class="gradient-text">Meeting Killer</span>
+            </h1>
+            <p class="text-gray-400 text-base max-w-2xl mx-auto">
+                Replace unnecessary meetings with AI-generated outcomes. Get instant decisions, action items, and insights.
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="space-y-8">
+            <!-- Input Section -->
+            <section class="clean-card rounded-2xl p-8">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Describe your meeting</h2>
+                    <p class="text-gray-400 text-sm">Paste meeting notes, agenda, or discussion topics</p>
+                </div>
+                <textarea 
+                    id="meetingInput"
+                    class="w-full h-40 clean-textarea rounded-xl p-4 text-white placeholder-gray-500 resize-none"
+                    placeholder="Example: Weekly team sync to discuss Q3 roadmap, resource allocation, and upcoming deadlines. Key stakeholders: product, engineering, design..."
+                ></textarea>
+                <button 
+                    id="generateBtn"
+                    class="mt-6 w-full clean-button text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 focus:outline-none"
+                >
+                    <span class="flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Generate Meeting Outcome
+                    </span>
+                </button>
+            </section>
+
+            <!-- Output Section -->
+            <section id="outputSection" class="hidden space-y-6">
+                <!-- Decision Summary -->
+                <div class="output-card clean-card rounded-2xl p-6 card-hover">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="section-icon w-10 h-10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold">Decision Summary</h3>
+                    </div>
+                    <div id="decisionSummary" class="text-gray-300 leading-relaxed"></div>
+                </div>
+
+                <!-- Key Points -->
+                <div class="output-card clean-card rounded-2xl p-6 card-hover">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="section-icon w-10 h-10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold">Key Points</h3>
+                    </div>
+                    <ul id="keyPoints" class="space-y-2 text-gray-300"></ul>
+                </div>
+
+                <!-- Decisions Made -->
+                <div class="output-card clean-card rounded-2xl p-6 card-hover">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="section-icon w-10 h-10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold">Decisions Made</h3>
+                    </div>
+                    <ul id="decisionsMade" class="space-y-2 text-gray-300"></ul>
+                </div>
+
+                <!-- Action Items -->
+                <div class="output-card action-items-card rounded-2xl p-6 card-hover">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="action-items-icon w-10 h-10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Action Items</h3>
+                        <div class="ml-auto">
+                            <span class="bg-accent text-white text-xs font-medium px-2 py-1 rounded-full">Priority</span>
+                        </div>
+                    </div>
+                    <ul id="actionItems" class="space-y-3"></ul>
+                </div>
+
+                <!-- Risks / Open Questions -->
+                <div class="output-card clean-card rounded-2xl p-6 card-hover">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="section-icon w-10 h-10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold">Risks / Open Questions</h3>
+                    </div>
+                    <ul id="risksQuestions" class="space-y-2 text-gray-300"></ul>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden text-center py-12">
+                <div class="inline-flex items-center gap-3 text-accent">
+                    <svg class="animate-spin w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span class="font-medium loading-dots">AI is processing</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-gray-500 text-sm">
+            <p>Meeting Killer © 2026 • Stop meeting, start doing</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', generateOutcome);
+        
+        async function generateOutcome() {
+            const input = document.getElementById('meetingInput').value.trim();
+            if (!input) {
+                alert('Please describe your meeting first');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('outputSection').classList.add('hidden');
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('generateBtn').classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                // Call the real API
+                const response = await fetch('/api/generate-outcome', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ meetingInput: input })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate outcome');
+                }
+
+                const responses = await response.json();
+                
+                // Hide loading state
+                document.getElementById('loadingState').classList.add('hidden');
+                
+                // Populate output sections
+                populateOutput(responses);
+                
+                // Show output section
+                document.getElementById('outputSection').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                
+                // Hide loading state
+                document.getElementById('loadingState').classList.add('hidden');
+                
+                // Show error message
+                showError(error.message || 'Failed to generate meeting outcome. Please try again.');
+                
+            } finally {
+                // Re-enable button
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function showError(message) {
+            // Create error alert
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+            errorDiv.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentElement) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function generateMockResponses(input) {
+            // Simple keyword-based mock responses
+            const hasRoadmap = input.toLowerCase().includes('roadmap');
+            const hasResources = input.toLowerCase().includes('resource') || input.toLowerCase().includes('allocation');
+            const hasDeadlines = input.toLowerCase().includes('deadline') || input.toLowerCase().includes('timeline');
+            const hasTeam = input.toLowerCase().includes('team') || input.toLowerCase().includes('sync');
+
+            return {
+                decisionSummary: hasRoadmap 
+                    ? "The team has aligned on Q3 roadmap priorities with a focus on core feature delivery and technical debt reduction. Key stakeholders have confirmed resource availability and timeline expectations."
+                    : "Meeting concluded with clear alignment on next steps and stakeholder responsibilities. All participants agreed on the proposed approach and timeline.",
+                
+                keyPoints: [
+                    hasRoadmap ? "Q3 roadmap prioritized user-facing features over internal tools" : "Stakeholder alignment achieved on primary objectives",
+                    hasResources ? "Resource allocation confirmed for all critical initiatives" : "Budget constraints acknowledged and addressed",
+                    hasDeadlines ? "Realistic timeline established with buffer for unexpected delays" : "Milestone dates set with clear dependencies",
+                    hasTeam ? "Cross-functional collaboration framework established" : "Communication channels defined for ongoing updates"
+                ].filter(Boolean),
+                
+                decisionsMade: [
+                    hasRoadmap ? "Proceed with Feature A as top priority for Q3" : "Primary initiative approved with minor modifications",
+                    hasResources ? "Allocate 3 additional engineers to the project" : "Budget approved for proposed scope",
+                    hasDeadlines ? "Set hard deadline for MVP delivery: August 15th" : "Weekly check-ins scheduled for progress tracking",
+                    "Design team to provide mockups by end of week"
+                ].filter(Boolean),
+                
+                actionItems: [
+                    "Project lead to update roadmap documentation by Friday",
+                    "Engineering team to provide technical estimates by next Tuesday",
+                    "Stakeholders to review and approve final scope by Wednesday",
+                    "Schedule follow-up meeting for 2 weeks from today",
+                    "Create shared dashboard for progress tracking"
+                ],
+                
+                risksQuestions: [
+                    hasResources ? "Risk: Key team member availability during critical development phase" : "Risk: Potential scope creep if additional requirements emerge",
+                    hasDeadlines ? "Question: What happens if MVP deadline cannot be met?" : "Question: How will success metrics be measured?",
+                    "Risk: Integration challenges with existing systems",
+                    "Question: What's the contingency plan if budget is reduced?",
+                    "Risk: Competitor moves that may impact timeline"
+                ]
+            };
+        }
+
+        function populateOutput(responses) {
+            // Decision Summary
+            document.getElementById('decisionSummary').innerHTML = `<p>${responses.decisionSummary}</p>`;
+            
+            // Key Points
+            const keyPointsEl = document.getElementById('keyPoints');
+            keyPointsEl.innerHTML = responses.keyPoints.map(point => 
+                `<li class="flex items-start gap-2">
+                    <span class="text-accent mt-1">•</span>
+                    <span>${point}</span>
+                </li>`
+            ).join('');
+            
+            // Decisions Made
+            const decisionsEl = document.getElementById('decisionsMade');
+            decisionsEl.innerHTML = responses.decisionsMade.map(decision => 
+                `<li class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>${decision}</span>
+                </li>`
+            ).join('');
+            
+            // Action Items
+            const actionItemsEl = document.getElementById('actionItems');
+            actionItemsEl.innerHTML = responses.actionItems.map(item => 
+                `<li class="action-item flex items-start gap-3">
+                    <div class="action-item-icon w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <span class="text-white font-medium">${item}</span>
+                </li>`
+            ).join('');
+            
+            // Risks / Open Questions
+            const risksEl = document.getElementById('risksQuestions');
+            risksEl.innerHTML = responses.risksQuestions.map(risk => 
+                `<li class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span>${risk}</span>
+                </li>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
